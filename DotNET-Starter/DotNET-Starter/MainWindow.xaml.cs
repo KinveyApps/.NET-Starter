@@ -49,7 +49,7 @@ namespace DotNET_Starter
 
             try
             {
-                kinveyClient = await builder.Build();
+                kinveyClient = builder.Build();
             }
             catch (Exception e)
             {
