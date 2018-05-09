@@ -42,7 +42,7 @@ namespace DotNET_Starter
             Client kinveyClient = null;
 
             string filePath = System.IO.Directory.GetCurrentDirectory();
-            Client.Builder builder = new Client.Builder(app_key, app_secret)
+            Client.Builder builder = new DotnetClientBuilder(app_key, app_secret)
              .setFilePath(filePath)
              .setOfflinePlatform(new SQLite.Net.Platform.Win32.SQLitePlatformWin32())
              .setLogger(delegate (string msg) { Console.WriteLine(msg); });
@@ -75,8 +75,12 @@ namespace DotNET_Starter
             List<Book> books = null;
             try
             {
-                var store = DataStore<Book>.Collection("books", DataStoreType.NETWORK, kinveyClient);
+                var store = DataStore<Book>.Collection("books", DataStoreType.CACHE, kinveyClient);
                 books = await store.FindAsync();
+                var syncStore = DataStore<Book>.Collection("books", DataStoreType.SYNC, kinveyClient);
+                List<Book> localBooks = null;
+                localBooks = await syncStore.FindAsync();
+                int count = localBooks.Count;
             }
             catch (KinveyException ke)
             {
@@ -85,6 +89,12 @@ namespace DotNET_Starter
             catch (Exception e)
             {
                 string msg = e.Message;
+            }
+
+            // Logout
+            if (kinveyClient.IsUserLoggedIn())
+            {
+                kinveyClient.ActiveUser.Logout();
             }
 
             return kinveyClient;
